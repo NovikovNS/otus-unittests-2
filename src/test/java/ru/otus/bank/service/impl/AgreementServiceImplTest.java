@@ -13,19 +13,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class AgreementServiceImplTest {
+class AgreementServiceImplTest {
 
     private final AgreementDao dao = mock(AgreementDao.class);
 
     AgreementServiceImpl agreementServiceImpl;
 
     @BeforeEach
-    public void init() {
+    void init() {
         agreementServiceImpl = new AgreementServiceImpl(dao);
     }
 
     @Test
-    public void testFindByName() {
+    void testFindByName() {
         String name = "test";
         Agreement agreement = new Agreement();
         agreement.setId(10L);
@@ -36,12 +36,12 @@ public class AgreementServiceImplTest {
 
         Optional<Agreement> result = agreementServiceImpl.findByName(name);
 
-        assertThat(result.isPresent()).isTrue();
+        assertThat(result).isPresent();
         assertThat(agreement.getId()).isEqualTo(agreement.getId());
     }
 
     @Test
-    public void testFindByNameWithCaptor() {
+    void testFindByNameWithCaptor() {
         String name = "test";
         Agreement agreement = new Agreement();
         agreement.setId(10L);
@@ -55,12 +55,12 @@ public class AgreementServiceImplTest {
         Optional<Agreement> result = agreementServiceImpl.findByName(name);
 
         assertThat(name).isEqualTo(captor.getValue());
-        assertThat(result.isPresent()).isTrue();
+        assertThat(result).isPresent();
         assertThat(agreement.getId()).isEqualTo(agreement.getId());
     }
 
     @Test
-    public void addingAgreement() {
+    void addingAgreement() {
         // Test data
         String agreementName = "testName";
 

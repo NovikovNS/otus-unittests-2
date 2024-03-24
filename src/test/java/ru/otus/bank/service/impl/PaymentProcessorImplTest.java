@@ -13,13 +13,15 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class PaymentProcessorImplTest {
+class PaymentProcessorImplTest {
 
     @Mock
     AccountService accountService;
@@ -28,7 +30,7 @@ public class PaymentProcessorImplTest {
     PaymentProcessorImpl paymentProcessor;
 
     @Test
-    public void testTransfer() {
+    void testTransfer() {
         // Test data
         int sourceType = 0;
         int destinationType = 0;
@@ -59,10 +61,13 @@ public class PaymentProcessorImplTest {
         // Invoke
         paymentProcessor.makeTransfer(sourceAgreement, destinationAgreement,
             sourceType, destinationType, BigDecimal.ONE);
+
+        // Verifications
+        verify(accountService, times(1)).makeTransfer(anyLong(), anyLong(), eq(BigDecimal.ONE));
     }
 
     @Test
-    public void makeTransferWithCommission() {
+    void makeTransferWithCommission() {
         // Test data
         int sourceType = 0;
         int destinationType = 0;
