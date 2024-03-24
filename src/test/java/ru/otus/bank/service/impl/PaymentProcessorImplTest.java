@@ -2,7 +2,6 @@ package ru.otus.bank.service.impl;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,11 +12,16 @@ import ru.otus.bank.service.AccountService;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class PaymentProcessorImplTest {
+class PaymentProcessorImplTest {
 
     @Mock
     AccountService accountService;
@@ -26,38 +30,81 @@ public class PaymentProcessorImplTest {
     PaymentProcessorImpl paymentProcessor;
 
     @Test
-    public void testTransfer() {
+    void testTransfer() {
+        // Test data
+        int sourceType = 0;
+        int destinationType = 0;
+
         Agreement sourceAgreement = new Agreement();
-        sourceAgreement.setId(1L);
+        Long sourceAgreementId = 1L;
+        sourceAgreement.setId(sourceAgreementId);
 
         Agreement destinationAgreement = new Agreement();
-        destinationAgreement.setId(2L);
+        Long destinationAgreementId = 2L;
+        destinationAgreement.setId(destinationAgreementId);
 
         Account sourceAccount = new Account();
         sourceAccount.setAmount(BigDecimal.TEN);
-        sourceAccount.setType(0);
+        sourceAccount.setType(sourceType);
 
         Account destinationAccount = new Account();
         destinationAccount.setAmount(BigDecimal.ZERO);
-        destinationAccount.setType(0);
+        destinationAccount.setType(destinationType);
 
-        when(accountService.getAccounts(argThat(new ArgumentMatcher<Agreement>() {
-            @Override
-            public boolean matches(Agreement argument) {
-                return argument != null && argument.getId() == 1L;
-            }
-        }))).thenReturn(List.of(sourceAccount));
+        // Mocks
+        when(accountService.getAccounts(argThat(argument -> argument != null && argument.getId().equals(sourceAgreementId))))
+            .thenReturn(List.of(sourceAccount));
 
-        when(accountService.getAccounts(argThat(new ArgumentMatcher<Agreement>() {
-            @Override
-            public boolean matches(Agreement argument) {
-                return argument != null && argument.getId() == 2L;
-            }
-        }))).thenReturn(List.of(destinationAccount));
+        when(accountService.getAccounts(argThat(argument -> argument != null && argument.getId().equals(destinationAgreementId))))
+            .thenReturn(List.of(destinationAccount));
 
+        // Invoke
         paymentProcessor.makeTransfer(sourceAgreement, destinationAgreement,
-                0, 0, BigDecimal.ONE);
+            sourceType, destinationType, BigDecimal.ONE);
 
+        // Verifications
+        verify(accountService, times(1)).makeTransfer(anyLong(), anyLong(), eq(BigDecimal.ONE));
+    }
+
+    @Test
+    void makeTransferWithCommission() {
+        // Test data
+        int sourceType = 0;
+        int destinationType = 0;
+        BigDecimal amount = BigDecimal.TEN;
+        BigDecimal commissionPercent = BigDecimal.TEN;
+        BigDecimal commission = amount.multiply(commissionPercent);
+
+        Agreement sourceAgreement = new Agreement();
+        Long sourceAgreementId = 1L;
+        sourceAgreement.setId(sourceAgreementId);
+
+        Agreement destinationAgreement = new Agreement();
+        Long destinationAgreementId = 2L;
+        destinationAgreement.setId(destinationAgreementId);
+
+        Account sourceAccount = new Account();
+        sourceAccount.setAmount(BigDecimal.TEN);
+        sourceAccount.setType(sourceType);
+
+        Account destinationAccount = new Account();
+        destinationAccount.setAmount(BigDecimal.ZERO);
+        destinationAccount.setType(destinationType);
+
+        // Mocks
+        when(accountService.getAccounts(argThat(argument -> argument != null && argument.getId().equals(sourceAgreementId))))
+            .thenReturn(List.of(sourceAccount));
+
+        when(accountService.getAccounts(argThat(argument -> argument != null && argument.getId().equals(destinationAgreementId))))
+            .thenReturn(List.of(destinationAccount));
+
+        // Invoke
+        paymentProcessor.makeTransferWithCommission(sourceAgreement, destinationAgreement, sourceType, destinationType, amount, commissionPercent);
+
+        // Verifications
+        verify(accountService, times(2)).getAccounts(any());
+        verify(accountService).charge(sourceAccount.getId(), commission);
+        verify(accountService).makeTransfer(sourceAccount.getId(), destinationAccount.getId(), amount);
     }
 
 }

@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class AccountServiceImplParametrizedTest {
+class AccountServiceImplParametrizedTest {
     @Mock
     AccountDao accountDao;
 
@@ -29,7 +29,7 @@ public class AccountServiceImplParametrizedTest {
 
     @ParameterizedTest
     @CsvSource({"100, 10, true", "10, 100, false", "10, 0, false", "10, -1, false"})
-    public void testTransferValidation(String sourceSum, String transferSum, String expectedResult) {
+    void testTransferValidation(String sourceSum, String transferSum, String expectedResult) {
         BigDecimal sourceAmount = new BigDecimal(sourceSum);
         BigDecimal transferAmount = new BigDecimal(transferSum);
         Boolean expected = Boolean.parseBoolean(expectedResult);
@@ -50,7 +50,7 @@ public class AccountServiceImplParametrizedTest {
 
     @ParameterizedTest
     @MethodSource("provideParameters")
-    public void testTransferValidationMethodSource(BigDecimal sourceAmount, BigDecimal transferAmount, Boolean expected) {
+    void testTransferValidationMethodSource(BigDecimal sourceAmount, BigDecimal transferAmount, Boolean expected) {
         Account sourceAccount = new Account();
         sourceAccount.setAmount(sourceAmount);
         sourceAccount.setId(1L);
@@ -65,7 +65,7 @@ public class AccountServiceImplParametrizedTest {
         assertEquals(expected, accountServiceImpl.makeTransfer(1L, 2L, transferAmount));
     }
 
-    public static Stream<? extends Arguments> provideParameters() {
+    static Stream<? extends Arguments> provideParameters() {
         return Stream.of(
             Arguments.of(new BigDecimal(100), new BigDecimal(10), true),
             Arguments.of(new BigDecimal(10), new BigDecimal(100), false),
